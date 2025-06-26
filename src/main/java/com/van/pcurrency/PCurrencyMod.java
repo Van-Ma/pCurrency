@@ -11,7 +11,7 @@ public class PCurrencyMod {
     public static final String MODID = "pcurrency";
 
     public PCurrencyMod() {
-        // Register items, blocks, etc.
+   
         
         ModBlocks.BLOCKS.register(FMLJavaModLoadingContext.get().getModEventBus());
         ModItems.ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());

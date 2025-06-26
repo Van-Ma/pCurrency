@@ -3,6 +3,6 @@
 	"credit": "Made with Blockbench",
 	"parent": "item/generated",
   "textures": {
-    "layer0": "pcurrency:item/cointexture"
+    "layer0": "pcurrency:item/bundletexture"
   }
 }
