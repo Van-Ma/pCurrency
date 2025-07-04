@@ -22,29 +22,46 @@ public class BankScreen extends Screen {
     private int innerX, innerY, innerWidth, innerHeight;
     private int tabX, tabStartY;
     private final int tabSize = 15, tabGap = 3;
-
     private char currentTab = 'd';
-    private EditBox depositInputBox; 
+    private int depositAmount = 0;
+    private int minusX, plusX, amountX, buttonY;
+    private int buttonWidth, amountWidth, buttonHeight = 16, gapWidth;
 
     public BankScreen() {
         super(Component.literal("Bank"));
     }
-
+    
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        char[] tabKeys = {'d', 'w', 's'};
+    int totalTabHeight = 3 * tabSize + 2 * tabGap;
+    int localTabStartY = innerY + (innerHeight - totalTabHeight) / 2;
+    int localTabX = innerX + innerWidth + 8;
+    char[] tabKeys = {'d', 'w', 's'};
 
-        for (int i = 0; i < tabKeys.length; i++) {
-            int ty = tabStartY + i * (tabSize + tabGap);
+    for (int i = 0; i < tabKeys.length; i++) {
+        int ty = localTabStartY + i * (tabSize + tabGap);
+        if (mouseX >= localTabX && mouseX <= localTabX + tabSize &&
+            mouseY >= ty && mouseY <= ty + tabSize) {
+            currentTab = tabKeys[i];
+            return true;
+        }
+    }
 
-            if (mouseX >= tabX && mouseX < tabX + tabSize &&
-                mouseY >= ty && mouseY < ty + tabSize) {
-                currentTab = tabKeys[i];
+    // Deposit tab button clicks
+    if (currentTab == 'd') {
+        if (mouseY >= buttonY && mouseY <= buttonY + buttonHeight) {
+            if (mouseX >= minusX && mouseX <= minusX + buttonWidth) {
+                if (depositAmount > 0) depositAmount--;
+                return true;
+            } else if (mouseX >= plusX && mouseX <= plusX + buttonWidth) {
+                depositAmount++;
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
     }
+
+    return super.mouseClicked(mouseX, mouseY, button);
+}
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
@@ -56,7 +73,7 @@ public class BankScreen extends Screen {
         int navX = (screenWidth - navWidth) / 2;
         int navY = 20;
 
-        int squareWidth = (int) (screenWidth * 0.3);
+        int squareWidth = (int) (screenWidth * 0.3) + 20;
         int squareHeight = squareWidth;
         int totalSquaresWidth = squareWidth * 2;
         int playerUIX = (screenWidth - totalSquaresWidth) / 2;
@@ -255,7 +272,7 @@ public class BankScreen extends Screen {
     };
 
     int labelX = x + (w - font.width(label)) / 2;
-    int labelY = y + 10;
+    int labelY = y + 5;
     g.drawString(this.font, label, labelX, labelY, 0xFFFFFFFF, false);
 
     g.pose().pushPose();
@@ -273,43 +290,44 @@ public class BankScreen extends Screen {
 
     g.pose().popPose();
 }
-private void validateDepositInput(String text, int pocketBalance) {
-    try {
-        int value = Integer.parseInt(text);
-        if (value <= 0) {
-            depositInputBox.setTextColor(0xFF5555); 
-        } else if (value > pocketBalance) {
-            depositInputBox.setTextColor(0xFFAA00); 
-        } else {
-            depositInputBox.setTextColor(0x55FF55); 
-        }
-    } catch (NumberFormatException e) {
-        depositInputBox.setTextColor(0xFF0000); 
-    }
-}
+ 
     private void drawDepositTab(GuiGraphics g, int x, int y, Player player) {
-    int pocketBalance = BankData.getPocketBalance(player); 
-    int bankBalance = BankData.getBankBalance(player); 
-    Font font = Minecraft.getInstance().font;
+    String label = "Bank Balance:";
+    int bankBalance = BankData.getBankBalance(player);
 
-    // 1. Draw Bank Balance
-    g.drawString(font, "Bank Balance: " + bankBalance, x + 10, y + 10, 0xFFFFFF);
+    int labelX = x + 10;
+    int labelY = y + 5;
 
-    // 2. Draw Pocket Balance
-    g.drawString(font, "Pocket Balance: " + pocketBalance, x + 10, y + 25, 0xCCCCCC);
+    // Draw balance
+    g.drawString(this.font, label, labelX, labelY, 0xFFFFFFFF, false);
+    g.drawString(this.font, String.valueOf(bankBalance), labelX, labelY + 12, 0xFFAAAAAA, false);
 
-    // 3. Input label
-    g.drawString(font, "Deposit Amount:", x + 10, y + 45, 0xFFFFFF);
+    // Sizing
+    int totalWidth = innerWidth;
+    buttonWidth = (int)(totalWidth * 0.14f);
+    gapWidth = (int)(totalWidth * 0.01f);
+    amountWidth = (int)(totalWidth * 0.70f);
 
+    int totalRowWidth = buttonWidth + gapWidth + amountWidth + gapWidth + buttonWidth;
+    int startX = x + (totalWidth - totalRowWidth) / 2;
+    buttonY = labelY + 30;
 
-    if (depositInputBox == null) {
-        depositInputBox = new EditBox(font, x + 10, y + 60, 100, 20, Component.literal("Amount"));
-        depositInputBox.setMaxLength(10);
-        depositInputBox.setResponder(text -> validateDepositInput(text, pocketBalance));
-    }
+    // Store positions
+    minusX = startX;
+    amountX = minusX + buttonWidth + gapWidth;
+    plusX = amountX + amountWidth + gapWidth;
 
+    // Minus button
+    g.fill(minusX, buttonY, minusX + buttonWidth, buttonY + buttonHeight, 0xFF888888);
+    g.drawString(this.font, "-", minusX + buttonWidth / 2 - 2, buttonY + 4, 0xFFFFFFFF, false);
 
-    depositInputBox.render(g, x, y, 0);
+    // Amount box
+    g.fill(amountX, buttonY, amountX + amountWidth, buttonY + buttonHeight, 0xFF444444);
+    g.drawString(this.font, String.valueOf(depositAmount), amountX + amountWidth / 2 - 4, buttonY + 4, 0xFFFFFFFF, false);
+
+    // Plus button
+    g.fill(plusX, buttonY, plusX + buttonWidth, buttonY + buttonHeight, 0xFF888888);
+    g.drawString(this.font, "+", plusX + buttonWidth / 2 - 2, buttonY + 4, 0xFFFFFFFF, false);
 }
 
     private void drawWithdrawTab(GuiGraphics g, int x, int y) {

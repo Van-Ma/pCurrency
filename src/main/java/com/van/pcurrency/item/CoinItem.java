@@ -16,6 +16,6 @@ public class CoinItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("Value: 1 shekel"));
+        tooltip.add(Component.literal("shekel"));
     }
 }

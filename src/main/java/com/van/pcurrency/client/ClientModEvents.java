@@ -11,12 +11,18 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 @Mod.EventBusSubscriber(modid = PCurrencyMod.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ClientModEvents {
+
+    @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            // Register the base villager renderer
+            EntityRenderers.register(ModEntities.FISHERMAN.get(), VillagerRenderer::new);
+             EntityRenderers.register(ModEntities.QUEST_VILLAGER.get(), VillagerRenderer::new);
+        });
+
+    }
+
     
-   
-@SubscribeEvent
-public static void onClientSetup(FMLClientSetupEvent event) {
-    event.enqueueWork(() -> {
-        EntityRenderers.register(ModEntities.VILLAGER_ENTITY.get(), VillagerRenderer::new);
-    });
-}
+
+    
 }

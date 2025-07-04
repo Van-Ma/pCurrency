@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "pcurrency:block/bank_block" }
+  }
+}
